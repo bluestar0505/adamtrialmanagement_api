@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('buyer_id')->index()->comment('バイヤーID(外部キー)');
             $table->dateTime('request_date')->comment('依頼日時');
             $table->string('management_no')->comment('管理No');
-            $table->string('product_name')->comment('品名');
+            $table->string('product_name')->comment('案件名');
             $table->string('material')->nullable()->comment('材質');
             $table->integer('quantity')->comment('数量');
             $table->string('data_2d')->comment('2Dデータ');

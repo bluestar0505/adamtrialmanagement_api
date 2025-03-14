@@ -13,6 +13,7 @@ class ProductSupplier extends Model
 
     protected $table = 'request_suppliers';
     public $timestamps = false;
+
     protected $fillable = [
         'request_id',
         'supplier_id',
@@ -21,5 +22,9 @@ class ProductSupplier extends Model
     protected $dates = [
         'created_at', 'updated_at', 'deleted_at'
     ];
+
+    public function product(){
+        return $this->hasMany(Product::class, 'id', 'request_id');
+    }
 
 }

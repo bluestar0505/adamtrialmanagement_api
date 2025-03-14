@@ -2,16 +2,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\RegisterQuoteMail;
+use App\Mail\RegisterSupplierMail;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Services\ProductService;
 use App\Services\SupplierService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Auth;
 use Hash;
+use Str;
 
 class SuppliersController extends Controller
 {
@@ -91,10 +96,20 @@ class SuppliersController extends Controller
                 $user = new User();
                 $user->email = $supplier->contact_email;
                 $user->name = $supplier->contact_name;
-                $user->password = Hash::make('12345678');
+
+                $password = Str::password(16, true, true, false, false);
+                $user->password = Hash::make($password);
+
                 $user->user_type = config('const.user_type.supplier');
                 $user->supplier_id = $supplier->id;
-                $user->save();
+                if($user->save()) {
+                    try {
+                        Mail::to($supplier->contact_email)->send(new RegisterSupplierMail($supplier, $password));
+                    } catch (\Exception $exception) {
+                        Log::error("EMail Sending Failed: {$supplier->id}-{$supplier->contact_email} ");
+                        Log::error($exception->getMessage());
+                    }
+                }
             }
 
             return response()->json([
@@ -108,7 +123,7 @@ class SuppliersController extends Controller
         if($supplier) {
             return response()->json([
                 'code' => 'success',
-                'requests' => $supplier->attributesToArray(),
+                'supplier' => $supplier->attributesToArray(),
             ]);
         } else {
             return response()->json([
@@ -138,15 +153,11 @@ class SuppliersController extends Controller
         } else {
             $supplier->fill($request_data);
             if($supplier->save()) {
-                $user = new User();
+                $user = $supplier->user;
                 $user->email = $supplier->contact_email;
                 $user->name = $supplier->contact_name;
-                $user->password = Hash::make('12345678');
-                $user->user_type = config('const.user_type.supplier');
-                $user->supplier_id = $supplier->id;
                 $user->save();
             }
-
             return response()->json([
                 'code' => 'success',
             ]);
@@ -155,7 +166,9 @@ class SuppliersController extends Controller
 
     public function delete(Request $request, Supplier $supplier)
     {
-        $supplier->delete();
+        if($supplier->user->delete()) {
+            $supplier->delete();
+        }
         return response()->json([
             'code' => 'success',
         ]);

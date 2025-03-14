@@ -19,8 +19,6 @@ class Product extends Model
         'request_date',
         'management_no',
         'product_name',
-        'material',
-        'quantity',
         'data_2d',
         'data_2d_org',
         'data_3d',
@@ -36,21 +34,29 @@ class Product extends Model
         'created_at', 'updated_at', 'deleted_at'
     ];
 
+    public function obj_buyer(){
+        return $this->belongsTo(Buyer::class, 'buyer_id', 'id');
+    }
+
+    public function product_suppliers(){
+        return $this->hasMany(ProductSupplier::class, 'request_id', 'id');
+    }
+
     public function obj_selected_quote(){
         return $this->hasOne(Quote::class, 'id', 'request_id')
             ->where('is_accepted', config('const.accept_status.accepted'));
     }
 
-    public function getQuoteStatusAttribute(){
-        $query = Quote::where('request_id', $this->id);
+    public function getRequestStatusAttribute(){
+        $query = Quote::where('request_id', $this->id)->where('is_sent', 1);
         if($query->count() == 0) {
-            return config('const.quote_status.waiting');
+            return config('const.request_status.waiting');
         } else {
             $query->where('is_accepted', config('const.accept_status.accepted'));
             if($query->count() > 0) {
-                return config('const.quote_status.selected');
+                return config('const.request_status.selected');
             } else {
-                return config('const.quote_status.has_quote');
+                return config('const.request_status.has_quote');
             }
         }
     }
@@ -70,4 +76,5 @@ class Product extends Model
     public function getSelectedDeliveryDateAttribute(){
         return $this->obj_selected_quote ? $this->obj_selected_quote->delivery_date : '';
     }
+
 }

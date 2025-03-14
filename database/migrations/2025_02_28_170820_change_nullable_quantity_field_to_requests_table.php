@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('request_suppliers', function (Blueprint $table) {
-            $table->foreignId('request_id')->index()->comment('見積依頼ID（外部キー）');
-            $table->foreignId('supplier_id')->index()->comment('サプライヤーID(外部キー)');
+        Schema::table('requests', function (Blueprint $table) {
+            $table->integer('quantity')->nullable()->comment('数量')->change();
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('request_suppliers');
+        Schema::table('requests', function (Blueprint $table) {
+            $table->integer('quantity')->comment('数量')->change();
+        });
     }
 };

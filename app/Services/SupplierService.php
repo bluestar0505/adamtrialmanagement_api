@@ -23,7 +23,7 @@ class SupplierService
 
     public static function generateSupplierNo($latest_supplier_no=''){
         if(!$latest_supplier_no) {
-            $latest_supplier_obj = Supplier::orderByDesc('id')->first();
+            $latest_supplier_obj = Supplier::orderByDesc('id')->withTrashed()->first();
             if (is_object($latest_supplier_obj)) {
                 $latest_supplier_no = $latest_supplier_obj->management_no;
             }

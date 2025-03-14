@@ -28,4 +28,8 @@ class Supplier extends Model
         'created_at', 'updated_at', 'deleted_at'
     ];
 
+    public function user(){
+        return $this->hasOne(User::class, 'supplier_id', 'id');
+    }
+
 }

@@ -52,7 +52,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://api.adamtrialmanagement-rfq.com'),
+
+    'frontend_url' => env('APP_FRONTEND_URL', 'https://adamtrialmanagement-rfq.com'),
 
     /*
     |--------------------------------------------------------------------------

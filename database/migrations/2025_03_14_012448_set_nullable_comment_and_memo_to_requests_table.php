@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('requests', function (Blueprint $table) {
-            $table->string('data_2d_org')->after('data_2d')->comment('2Dデータのオリジナル名');
-            $table->string('data_3d_org')->after('data_3d')->comment('3Dデータのオリジナル名');
+            $table->text('comment')->nullable()->comment('コメント')->change();
+            $table->text('memo')->nullable()->comment('メモ')->change();
         });
     }
 
@@ -23,10 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('requests', function (Blueprint $table) {
-            $table->dropColumn([
-                'data_2d_org',
-                'data_3d_org',
-            ]);
+            $table->text('comment')->comment('コメント')->change();
+            $table->text('memo')->comment('メモ')->change();
         });
     }
 };

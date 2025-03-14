@@ -163,7 +163,7 @@ return [
         'email' => 'ログインＩＤ',
         'password' => 'パスワード',
 
-        'product_name' => '品名',
+        'product_name' => '案件名',
         'material' => '材質',
         'quantity' => '数量',
         'desired_delivery_date' => '希望納期',
@@ -173,6 +173,10 @@ return [
         '2d_file' => '2Dデータ',
         '3d_file' => '3Dデータ',
         'important' => '優先フラグ',
+        'delivery_date' => '回答納期',
+
+        'order_file' => '注文書',
+        'drawing_file' => '正式図面（zip）',
     ],
 
 ];

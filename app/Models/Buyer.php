@@ -14,6 +14,7 @@ class Buyer extends Model
      */
 
     protected $fillable = [
+        'management_no',
         'name',
         'email',
     ];
@@ -22,4 +23,8 @@ class Buyer extends Model
         'created_at', 'updated_at', 'deleted_at'
     ];
 
+
+    public function user(){
+        return $this->hasOne(User::class, 'buyer_id', 'id');
+    }
 }
