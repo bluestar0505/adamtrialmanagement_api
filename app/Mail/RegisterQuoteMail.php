@@ -47,7 +47,7 @@ class RegisterQuoteMail extends Mailable
         return new Content(
             markdown: 'mail.register_quote',
                 with: [
-                    'url' => config('app.frontend_url') ."/buyer/quotes/detail/{$this->product->id}/{$this->quote->id}" ,
+                    'url' => config('app.frontend_url') ."/buyer/quotes/detail?request={$this->product->id}&id={$this->quote->id}" ,
                     'supplier' => $this->supplier,
                     'product' => $this->product,
                     'buyer' => $this->buyer,

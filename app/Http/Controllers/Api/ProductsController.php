@@ -39,7 +39,12 @@ class ProductsController extends Controller
                 'request_date' => $request->input('request_date'),
             ];
 
-            $obj_products = ProductService::doSearch($condition)->orderBy($sortColumn, $sortOrder)->paginate($per_page);
+            $obj_products = ProductService::doSearch($condition)
+                ->when($auth_user->user_type != config('const.user_type.system_admin'), function ($q) use($auth_user){
+                    $q->where('buyer_id', $auth_user->buyer_id);
+                })
+                ->orderBy($sortColumn, $sortOrder)
+                ->paginate($per_page);
             if($obj_products->count() > 0) {
                 $current_page = $obj_products->currentPage();
                 $total_cnt = $obj_products->total();
@@ -112,7 +117,7 @@ class ProductsController extends Controller
                 $request_data['data_3d'] = $new_filename;
                 $request_data['data_3d_org'] = $original_filename;
             }
-            $request_data['buyer_id'] = $request->user()->id;
+            $request_data['buyer_id'] = $request->user()->buyer_id;
             $request_data['management_no'] = ProductService::generateProductNo();
             $request_data['request_date'] = Carbon::now()->format('Y-m-d H:i:s');
             $request_data['desired_delivery_date'] = Carbon::parse($request_data['desired_delivery_date'])->format('Y-m-d');
@@ -258,6 +263,8 @@ class ProductsController extends Controller
 
     public function getQuotes(Request $request, Product $product=null)
     {
+        $auth_user = $request->user();
+
         $per_page = $request->input('perPage', 10);
         $sortColumn = $request->query('sort', 'quotes.id');
         $sortOrder = $request->query('direction', 'desc');
@@ -273,6 +280,9 @@ class ProductsController extends Controller
 
         $obj_quotes = ProductSupplier::orderByDesc('quotes.created_at')
             ->orderBy($sortColumn, $sortOrder)
+            ->when($auth_user->user_type != config('const.user_type.system_admin'), function ($q) use($auth_user){
+                $q->where('requests.buyer_id', $auth_user->buyer_id);
+            })
             ->leftJoin('requests', function ($join) {
                 $join->on('requests.id', 'request_suppliers.request_id');
             })

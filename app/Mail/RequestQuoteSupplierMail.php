@@ -43,7 +43,7 @@ class RequestQuoteSupplierMail extends Mailable
         return new Content(
             markdown: 'mail.request_quote',
                 with: [
-                    'url' => config('app.frontend_url') .'/supplier/quotes/'. $this->product->id,
+                    'url' => config('app.frontend_url') .'/supplier/quotes/detail?id='. $this->product->id,
                     'supplier' => $this->supplier,
                     'product' => $this->product
                 ]

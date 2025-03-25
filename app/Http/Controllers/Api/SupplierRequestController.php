@@ -187,7 +187,7 @@ class SupplierRequestController extends Controller
             if($quote->save()){
                 if($quote->obj_supplier && $quote->obj_product && $quote->obj_product->obj_buyer) {
                     try {
-                        Mail::to($quote->obj_supplier->contact_email)->send(new RegisterQuoteMail($quote->obj_supplier, $quote->obj_product, $quote, $quote->obj_product->obj_buyer));
+                        Mail::to($quote->obj_product->obj_buyer->email)->send(new RegisterQuoteMail($quote->obj_supplier, $quote->obj_product, $quote, $quote->obj_product->obj_buyer));
                     } catch (\Exception $exception) {
                         Log::error("EMail Sending Failed: {$quote->obj_supplier->id}-{$quote->obj_supplier->contact_email} ");
                         Log::error($exception->getMessage());
