@@ -170,10 +170,11 @@ return [
         'reply_due_date' => '回答期日',
         'comment' => 'コメント',
         'memo' => 'メモ',
-        '2d_file' => '2Dデータ',
-        '3d_file' => '3Dデータ',
+        'd2_file' => '2Dデータ',
+        'd3_file' => '3Dデータ',
         'important' => '優先フラグ',
         'delivery_date' => '回答納期',
+        'total_amount' => '総額',
 
         'order_file' => '注文書',
         'drawing_file' => '正式図面（zip）',

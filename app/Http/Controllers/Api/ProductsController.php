@@ -38,8 +38,10 @@ class ProductsController extends Controller
                 'product_name' => $request->input('product_name'),
                 'request_date' => $request->input('request_date'),
             ];
+            $sort = $request->input('sort', );
+            $direction = $request->input('direction');
 
-            $obj_products = ProductService::doSearch($condition)
+            $obj_products = ProductService::doSearch($condition, $sort, $direction)
                 ->when($auth_user->user_type != config('const.user_type.system_admin'), function ($q) use($auth_user){
                     $q->where('buyer_id', $auth_user->buyer_id);
                 })
@@ -58,9 +60,10 @@ class ProductsController extends Controller
                     $product['reply_due_date'] = Carbon::parse($obj_product->reply_due_date)->format('Y-m-d');
                     $product['request_status'] = $obj_product->request_status;
                     $product['supplier'] = $obj_product->selected_supplier_name;
-                    $product['unit_price'] = $obj_product->selected_unit_price;
-                    $product['quantity'] = $obj_product->selected_quantity;
-                    $product['total_amount'] = $obj_product->selected_total_amount;
+                    //$product['unit_price'] = $obj_product->selected_unit_price ? ;
+                    //$product['quantity'] = $obj_product->selected_quantity;
+                    $total_amount = $obj_product->selected_total_amount;
+                    $product['total_amount'] = $total_amount ? '￥'.number_format($total_amount) : '';
                     $product['delivery_date'] = $obj_product->selected_delivery_date;
                     $products[] = $product;
                 }
@@ -83,14 +86,14 @@ class ProductsController extends Controller
     public function store(Request $request){
         $request_data = $request->all();
         $validator = Validator::make($request->all(), [
-            'product_name' => 'required|string|max:255',
-            'desired_delivery_date' => 'required|date',
-            'reply_due_date' => 'required|date',
+            'product_name' => 'nullable|string|max:255',
+            'desired_delivery_date' => 'nullable',
+            'reply_due_date' => 'nullable',
             'comment' => 'nullable|string:1000',
             'memo' => 'nullable|string:1000',
-            'important' => 'required|numeric',
-            'd2_file' => 'required|file|max:102400', //100M
-            'd3_file' => 'required|file|max:102400', //100M
+            'important' => 'nullable',
+            'd2_file' => 'nullable|file|max:102400', //100M
+            'd3_file' => 'nullable|file|max:102400', //100M
         ], [
             'important.numeric' => "優先フラグを選択してください。"
         ]);
@@ -120,8 +123,8 @@ class ProductsController extends Controller
             $request_data['buyer_id'] = $request->user()->buyer_id;
             $request_data['management_no'] = ProductService::generateProductNo();
             $request_data['request_date'] = Carbon::now()->format('Y-m-d H:i:s');
-            $request_data['desired_delivery_date'] = Carbon::parse($request_data['desired_delivery_date'])->format('Y-m-d');
-            $request_data['reply_due_date'] = Carbon::parse($request_data['reply_due_date'])->format('Y-m-d');
+            $request_data['desired_delivery_date'] = isset($request_data['desired_delivery_date']) && $request_data['desired_delivery_date'] ? Carbon::parse($request_data['desired_delivery_date'])->format('Y-m-d') : null;
+            $request_data['reply_due_date'] = isset($request_data['reply_due_date']) && $request_data['reply_due_date'] ? Carbon::parse($request_data['reply_due_date'])->format('Y-m-d') : null;
 
             $product = new Product();
             $product->fill($request_data);
@@ -129,16 +132,23 @@ class ProductsController extends Controller
 
             return response()->json([
                 'code' => 'success',
+                'id' => $product->id
             ]);
         }
     }
 
     public function detail(Request $request, Product $product)
     {
+        $arr_request =  $product->attributesToArray();
+        foreach ($arr_request as $key =>$record) {
+            if(is_null($record)) {
+                $arr_request[$key] = '';
+            }
+        }
         if($product) {
             return response()->json([
                 'code' => 'success',
-                'requests' => $product->attributesToArray(),
+                'requests' => $arr_request,
             ]);
         } else {
             return response()->json([
@@ -151,9 +161,9 @@ class ProductsController extends Controller
     {
         $request_data = $request->all();
         $validator = Validator::make($request->all(), [
-            'product_name' => 'required|string|max:255',
-            'desired_delivery_date' => 'required|date',
-            'reply_due_date' => 'required|date',
+            'product_name' => 'nullable|string|max:255',
+            'desired_delivery_date' => 'nullable',
+            'reply_due_date' => 'nullable',
             'comment' => 'nullable|string:1000',
             'memo' => 'nullable|string:1000',
             'd2_file' => 'nullable|file|max:102400', //100M
@@ -182,14 +192,16 @@ class ProductsController extends Controller
                 $request_data['data_3d'] = $new_filename;
                 $request_data['data_3d_org'] = $original_filename;
             }
-            $request_data['desired_delivery_date'] = Carbon::parse($request_data['desired_delivery_date'])->format('Y-m-d');
-            $request_data['reply_due_date'] = Carbon::parse($request_data['reply_due_date'])->format('Y-m-d');
+
+            $request_data['desired_delivery_date'] = isset($request_data['desired_delivery_date']) && $request_data['desired_delivery_date'] ? Carbon::parse($request_data['desired_delivery_date'])->format('Y-m-d') : null;
+            $request_data['reply_due_date'] = isset($request_data['reply_due_date']) && $request_data['reply_due_date'] ? Carbon::parse($request_data['reply_due_date'])->format('Y-m-d') : null;
 
             $product->fill($request_data);
             $product->save();
 
             return response()->json([
                 'code' => 'success',
+                'id' => $product->id
             ]);
         }
     }
@@ -331,7 +343,7 @@ class ProductsController extends Controller
                 $quote['management_no'] = $obj_quote->management_no;
                 $quote['product_name'] = $obj_quote->product_name;
                 $quote['company_name'] = $obj_quote->company_name;
-                $quote['answered_at'] = $obj_quote->answered_at? Carbon::parse($obj_quote->answered_at)->format('Y-m-d'):'';
+                $quote['answered_at'] = $obj_quote->answered_at? Carbon::parse($obj_quote->answered_at)->format('Y-m-d H:i:s'):'';
                 $quote['quote_status'] = ProductService::getAdminQuoteStatus($obj_quote);
                 $quote['total_amount'] = $obj_quote->total_amount ? "¥".number_format($obj_quote->total_amount) : '';
                 $quotes[] = $quote;

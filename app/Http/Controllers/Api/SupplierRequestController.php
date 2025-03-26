@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Auth;
 use Hash;
+use DB;
 
 class SupplierRequestController extends Controller
 {
@@ -106,7 +107,13 @@ class SupplierRequestController extends Controller
                 if($obj_quote) {
                     $arr_quote = $obj_quote->attributesToArray();
                     unset($arr_quote['products']);
+
                     $arr_product = $obj_quote->products ? json_decode($obj_quote->products, true) : [];
+                    foreach ($arr_product as $key=>$record) {
+                        $arr_product[$key]['price'] = (string)$record['price'];
+                        $arr_product[$key]['quantity'] = (string)$record['quantity'];
+                        $arr_product[$key]['subtotal'] = (string)$record['subtotal'];
+                    }
                 }
                 if($obj_quote) {
                     $quote_status = ProductService::getHPQuoteStatus($obj_quote);
@@ -140,7 +147,7 @@ class SupplierRequestController extends Controller
         if($auth_user && ($auth_user->user_type == config('const.user_type.supplier'))) {
             $request_data = $request->all();
             $validator = Validator::make($request->all(), [
-                'total_amount' => 'required|string|max:255',
+                'total_amount' => 'required|numeric',
                 'delivery_date' => 'required|date',
             ]);
 

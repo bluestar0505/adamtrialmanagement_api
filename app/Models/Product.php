@@ -43,7 +43,7 @@ class Product extends Model
     }
 
     public function obj_selected_quote(){
-        return $this->hasOne(Quote::class, 'id', 'request_id')
+        return $this->hasOne(Quote::class, 'request_id', 'id')
             ->where('is_accepted', config('const.accept_status.accepted'));
     }
 
@@ -62,7 +62,7 @@ class Product extends Model
     }
 
     public function getSelectedSupplierNameAttribute(){
-        return $this->obj_selected_quote ? $this->obj_selected_quote->name : '';
+        return $this->obj_selected_quote && $this->obj_selected_quote->obj_supplier ? $this->obj_selected_quote->obj_supplier->company_name : '';
     }
     public function getSelectedUnitPriceAttribute(){
         return $this->obj_selected_quote ? $this->obj_selected_quote->unit_price : '';

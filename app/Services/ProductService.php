@@ -10,8 +10,8 @@ use Hash;
 use Auth;
 class ProductService
 {
-    public static function doSearch($condition=[]) {
-        $products = Product::orderByDesc('requests.created_at');
+    public static function doSearch($condition=[], $sort='created_at', $direction='desc') {
+        $products = Product::orderBy($sort, $direction);
         if(isset($condition['management_no'])) {
             $products->where('management_no', 'like', "%{$condition['management_no']}%");
         }
@@ -21,6 +21,7 @@ class ProductService
         if(isset($condition['request_date'])) {
             $products->whereDate('request_date', $condition['request_date']);
         }
+
         return $products;
     }
 
